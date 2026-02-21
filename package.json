@@ -1,11 +1,13 @@
 {
     "name": "minenepal-votifier",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "A Votifier protocol v2 client for MineNepal",
-    "main": "index.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
-        "test": "node test/vote.test.js",
-        "pretest": "node -e \"console.log('Running tests...')\""
+        "build": "tsc -p tsconfig.json",
+        "pretest": "npm run build",
+        "test": "node test/vote.test.js"
     },
     "repository": {
         "type": "git",
@@ -22,5 +24,12 @@
         "url": "https://github.com/birajrai/minenepal-votifier/issues"
     },
     "homepage": "https://github.com/birajrai/minenepal-votifier",
-    "dependencies": {}
+    "dependencies": {},
+    "devDependencies": {
+        "typescript": "^5.2.0",
+        "@types/node": "^20.5.0"
+    },
+    "files": [
+        "dist/**/*"
+    ]
 }
