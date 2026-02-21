@@ -75,3 +75,77 @@ See `example.js` for a concrete runnable example.
 ## License
 
 MIT
+
+## Server frameworks
+
+These short examples show how to use the package from server-side code. Never call this from browser/client code — the `token` is a secret and must stay on the server.
+
+### Express (route example)
+
+```js
+const express = require('express');
+const vote = require('minenepal-votifier');
+
+const app = express();
+app.use(express.json());
+
+app.post('/api/vote', async (req, res) => {
+    const { username, address } = req.body;
+    const options = {
+        host: process.env.VOTIFIER_HOST,
+        port: Number(process.env.VOTIFIER_PORT),
+        token: process.env.VOTIFIER_TOKEN,
+        vote: {
+            username,
+            address,
+            timestamp: Date.now(),
+            serviceName: process.env.SERVICE_NAME || 'MineNepal',
+        },
+    };
+
+    try {
+        await vote(options);
+        res.status(200).json({ ok: true });
+    } catch (err) {
+        res.status(502).json({ error: err.message });
+    }
+});
+
+app.listen(3000);
+```
+
+### Next.js (API Route)
+
+For Next.js pages/api route (Next 12/13):
+
+```js
+// pages/api/vote.js
+import vote from 'minenepal-votifier';
+
+export default async function handler(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    const { username, address } = req.body;
+
+    const options = {
+        host: process.env.VOTIFIER_HOST,
+        port: Number(process.env.VOTIFIER_PORT),
+        token: process.env.VOTIFIER_TOKEN,
+        vote: { username, address, timestamp: Date.now(), serviceName: process.env.SERVICE_NAME },
+    };
+
+    try {
+        await vote(options);
+        res.status(200).json({ ok: true });
+    } catch (err) {
+        res.status(502).json({ error: err.message });
+    }
+}
+```
+
+If you're using the App Router or server components, the same server-side logic applies — ensure the code runs only on the server and environment variables are configured.
+
+### Security & Deployment notes
+
+- Keep `VOTIFIER_TOKEN` in server-side environment variables or a secrets manager.
+- Do not log the token or full signed payload in production.
+- Consider running your Votifier connection from a backend worker or queue if you expect high volume, to avoid delaying HTTP responses.
