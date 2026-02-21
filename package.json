@@ -4,7 +4,8 @@
     "description": "A Votifier protocol v2 client for MineNepal",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "node test/vote.test.js",
+        "pretest": "node -e \"console.log('Running tests...')\""
     },
     "repository": {
         "type": "git",
@@ -12,7 +13,8 @@
     },
     "keywords": [
         "votifier",
-        "minecraft"
+        "minecraft",
+        "votifier-v2"
     ],
     "author": "birajrai",
     "license": "MIT",
