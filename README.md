@@ -39,8 +39,30 @@ vote(options, err => {
 
 Example (Promise):
 
+````js
+const vote = require('minenepal-votifier');
+
+# MineNepal Votifier
+
+Lightweight Votifier v2 client helper for sending signed vote messages to a Votifier v2 server.
+
+Install
+
+```bash
+npm install --save minenepal-votifier
+````
+
+Quick usage (Promise):
+
 ```js
 const vote = require('minenepal-votifier');
+
+const options = {
+    host: process.env.VOTIFIER_HOST || '127.0.0.1',
+    port: Number(process.env.VOTIFIER_PORT) || 8192,
+    token: process.env.VOTIFIER_TOKEN || 'MYTOKEN',
+    vote: { username: 'Herobrine', address: '127.0.0.1', timestamp: Date.now(), serviceName: 'MineNepal' },
+};
 
 (async () => {
     try {
@@ -52,98 +74,100 @@ const vote = require('minenepal-votifier');
 })();
 ```
 
-## Options
+Options
 
 - `host` (string) - Votifier server host
 - `port` (number) - Votifier server port
 - `token` (string) - Shared secret/token for HMAC signing
-- `vote` (object) - Vote payload containing `username`, `address`, `timestamp`, `serviceName`
-- `timeout` (number, optional) - Socket timeout in milliseconds (default 2000)
+- `vote` (object) - `{ username, address, timestamp, serviceName }`
+- `timeout` (number, optional) - socket timeout in ms (default 2000)
 
-## Behavior & Errors
+Server frameworks
 
-- Throws or rejects on invalid arguments.
-- Calls back with an Error or resolves the Promise on failure.
-- Returns successfully (callback with null / resolved Promise) when the server accepts the vote.
+- Express: Compatible with **Express 5.2.1**
 
-## Source & build
+    Minimal route example:
 
-TypeScript source is in `src/index.ts`; build output is written to `dist/` and published from there.
+    ```js
+    const express = require('express');
+    const vote = require('minenepal-votifier');
+    const app = express();
+    app.use(express.json());
 
-## License
+    app.post('/api/vote', async (req, res) => {
+        try {
+            await vote({
+                host: process.env.VOTIFIER_HOST,
+                port: Number(process.env.VOTIFIER_PORT),
+                token: process.env.VOTIFIER_TOKEN,
+                vote: { ...req.body, timestamp: Date.now(), serviceName: process.env.SERVICE_NAME },
+            });
+            res.status(200).json({ ok: true });
+        } catch (err) {
+            res.status(502).json({ error: err.message });
+        }
+    });
+    ```
 
-MIT
+- Next.js: Compatible with **Next.js 16.1.6**
 
-## Server frameworks
+    Minimal Pages API example (`pages/api/vote.js`):
 
-These short examples show how to use the package from server-side code. Never call this from browser/client code — the `token` is a secret and must stay on the server.
+    ```js
+    import vote from 'minenepal-votifier';
 
-### Express (route example)
-
-```js
-const express = require('express');
-const vote = require('minenepal-votifier');
-
-const app = express();
-app.use(express.json());
-
-app.post('/api/vote', async (req, res) => {
-    const { username, address } = req.body;
-    const options = {
-        host: process.env.VOTIFIER_HOST,
-        port: Number(process.env.VOTIFIER_PORT),
-        token: process.env.VOTIFIER_TOKEN,
-        vote: {
-            username,
-            address,
-            timestamp: Date.now(),
-            serviceName: process.env.SERVICE_NAME || 'MineNepal',
-        },
-    };
-
-    try {
-        await vote(options);
-        res.status(200).json({ ok: true });
-    } catch (err) {
-        res.status(502).json({ error: err.message });
+    export default async function handler(req, res) {
+        if (req.method !== 'POST') return res.status(405).end();
+        try {
+            await vote({
+                host: process.env.VOTIFIER_HOST,
+                port: Number(process.env.VOTIFIER_PORT),
+                token: process.env.VOTIFIER_TOKEN,
+                vote: { ...req.body, timestamp: Date.now(), serviceName: process.env.SERVICE_NAME },
+            });
+            res.status(200).json({ ok: true });
+        } catch (err) {
+            res.status(502).json({ error: err.message });
+        }
     }
-});
+    ```
 
-app.listen(3000);
-```
+Links
 
-### Next.js (API Route)
+- npm: https://www.npmjs.com/package/minenepal-votifier
+- GitHub: https://github.com/birajrai/minenepal-votifier
 
-For Next.js pages/api route (Next 12/13):
+Security
+
+- Never expose the `token` to client-side code. Keep it in server environment variables or a secrets manager.
+
+License
+
+- MIT — see [LICENSE](LICENSE)
+
+App Router example (`app/api/vote/route.js`) — Next.js 13+ / 16.x:
 
 ```js
-// pages/api/vote.js
 import vote from 'minenepal-votifier';
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).end();
-    const { username, address } = req.body;
-
-    const options = {
-        host: process.env.VOTIFIER_HOST,
-        port: Number(process.env.VOTIFIER_PORT),
-        token: process.env.VOTIFIER_TOKEN,
-        vote: { username, address, timestamp: Date.now(), serviceName: process.env.SERVICE_NAME },
-    };
-
+export async function POST(request) {
+    const body = await request.json();
     try {
-        await vote(options);
-        res.status(200).json({ ok: true });
+        await vote({
+            host: process.env.VOTIFIER_HOST,
+            port: Number(process.env.VOTIFIER_PORT),
+            token: process.env.VOTIFIER_TOKEN,
+            vote: { ...body, timestamp: Date.now(), serviceName: process.env.SERVICE_NAME },
+        });
+        return new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
     } catch (err) {
-        res.status(502).json({ error: err.message });
+        return new Response(JSON.stringify({ error: err.message }), {
+            status: 502,
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
 }
 ```
-
-If you're using the App Router or server components, the same server-side logic applies — ensure the code runs only on the server and environment variables are configured.
-
-### Security & Deployment notes
-
-- Keep `VOTIFIER_TOKEN` in server-side environment variables or a secrets manager.
-- Do not log the token or full signed payload in production.
-- Consider running your Votifier connection from a backend worker or queue if you expect high volume, to avoid delaying HTTP responses.
