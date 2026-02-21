@@ -1,7 +1,5 @@
 # MineNepal Votifier
 
-# MineNepal Votifier
-
 Lightweight Votifier v2 client helper used by MineNepal to send signed vote messages to a Votifier v2 server.
 
 ## Installation
@@ -68,9 +66,9 @@ const vote = require('minenepal-votifier');
 - Calls back with an Error or resolves the Promise on failure.
 - Returns successfully (callback with null / resolved Promise) when the server accepts the vote.
 
-## Example file
+## Source & build
 
-See `example.js` for a concrete runnable example.
+TypeScript source is in `src/index.ts`; build output is written to `dist/` and published from there.
 
 ## License
 
