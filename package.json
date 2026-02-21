@@ -1,0 +1,24 @@
+{
+    "name": "minenepal-votifier",
+    "version": "0.0.1",
+    "description": "A Votifier protocol v2 client for MineNepal",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/birajrai/minenepal-votifier.git"
+    },
+    "keywords": [
+        "votifier",
+        "minecraft"
+    ],
+    "author": "birajrai",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/birajrai/minenepal-votifier/issues"
+    },
+    "homepage": "https://github.com/birajrai/minenepal-votifier",
+    "dependencies": {}
+}
